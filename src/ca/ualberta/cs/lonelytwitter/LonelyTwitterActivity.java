@@ -6,8 +6,13 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Date;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import android.app.Activity;
 import android.content.Context;
@@ -37,7 +42,7 @@ public class LonelyTwitterActivity extends Activity {
 		oldTweetsList = (ListView) findViewById(R.id.oldTweetsList);
 
 		saveButton.setOnClickListener(new View.OnClickListener() {
-
+			//overridden onClick method of that class
 			public void onClick(View v) {
 				setResult(RESULT_OK);
 				String text = bodyText.getText().toString();
@@ -76,15 +81,19 @@ public class LonelyTwitterActivity extends Activity {
 	}
 
 	private ArrayList<String> loadFromFile() {
-		ArrayList<String> tweets = new ArrayList<String>();
+		Gson gson = new Gson();
+		ArrayList<String> tweets = null;
 		try {
 			FileInputStream fis = openFileInput(FILENAME);
-			BufferedReader in = new BufferedReader(new InputStreamReader(fis));
-			String line = in.readLine();
-			while (line != null) {
-				tweets.add(line);
-				line = in.readLine();
-			}
+			// https://sites.google.com/site/gson/gson-user-guide 2015-01-21
+			// dataType object contains all info about of ArrayList string that gson needs
+			// made class that stores information about classes
+			Type dataType = new TypeToken<ArrayList<String>>() {}.getType();
+			InputStreamReader isr = new InputStreamReader(fis);
+			
+			// save to tweets
+			tweets = gson.fromJson(isr, dataType);
+			fis.close(); // must close it because you cannot have too many files open - your app can crash if opened without closing too many times
 
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
@@ -93,15 +102,21 @@ public class LonelyTwitterActivity extends Activity {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		if (tweets == null) {
+			tweets = new ArrayList<String>();
+		}
 		return tweets;
 	}
 	
 	private void saveInFile(String text, Date date) {
+		Gson gson = new Gson();
 		try {
 			FileOutputStream fos = openFileOutput(FILENAME,
-					Context.MODE_APPEND);
-			fos.write(new String(date.toString() + " | " + text)
-					.getBytes());
+					0);
+			// need outputstreamwriter because fileouputstream doesn't have enough features for json alone
+			OutputStreamWriter osw = new OutputStreamWriter(fos);
+			gson.toJson(tweets, osw);
+			osw.flush(); // Forces unix to write! Otherwise list won't save what you have written when you restart the app
 			fos.close();
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
