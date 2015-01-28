@@ -3,6 +3,7 @@
 	<name>LonelyTwitterTests</name>
 	<comment></comment>
 	<projects>
+		<project>LonelyTwitter</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
