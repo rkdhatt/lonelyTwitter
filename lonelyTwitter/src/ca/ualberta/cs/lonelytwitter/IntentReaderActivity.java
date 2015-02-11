@@ -14,7 +14,7 @@ public class IntentReaderActivity extends Activity {
 	public static final int REVERSE = 2;
 	public static final int DOUBLE = 3;
 	
-	private String text;
+	private String text; // from intent
 	private int mode;
 	
 	public String getText() {
@@ -25,8 +25,25 @@ public class IntentReaderActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_intent_reader);
+		Intent intent = getIntent();
+
+		mode = intent.getIntExtra(TRANSFORM_KEY, NORMAL);
+		// now transform text
+		text = transformText(intent.getStringExtra(TEXT_KEY));
+		
+		// Using TDD, test and implement a default message 
+		// that will be displayed if no text is sent in the intent. This should not be 
+		// returned in getText(), but should be displayed in the textview.
+		if (text != null) {
+			TextView textView = (TextView) findViewById(R.id.intentText);
+			textView.setText(text);
+		} else{
+			TextView textView = (TextView) findViewById(R.id.intentText);
+			textView.setText("There was no text from intent!");
+		}
 	}
 	
+	// performs transformations
 	public String transformText(String text) {
 		switch (mode) {
 			case REVERSE:
